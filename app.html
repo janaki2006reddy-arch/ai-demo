@@ -1,1 +1,357 @@
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gradient To-Do App</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 450px;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(30, 20, 80, 0.25);
+    }
+
+    .header {
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      color: #35245c;
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #77718a;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      flex: 1;
+      padding: 15px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #eee9ff, #fce7f3);
+    }
+
+    .stat h2 {
+      color: #7045b5;
+      font-size: 26px;
+    }
+
+    .stat p {
+      margin-top: 5px;
+      color: #77718a;
+      font-size: 12px;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    #taskInput {
+      flex: 1;
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid #e3dcf4;
+      border-radius: 12px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    #taskInput:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px #8b5cf622;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .add-btn {
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      color: white;
+      padding: 0 18px;
+      border-radius: 12px;
+      font-size: 22px;
+      transition: transform 0.2s;
+    }
+
+    .add-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .section-title {
+      color: #35245c;
+      font-size: 17px;
+      margin-bottom: 14px;
+    }
+
+    #taskList {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px;
+      background: #f8f6ff;
+      border: 1px solid #eee8fb;
+      border-radius: 13px;
+      animation: appear 0.25s ease;
+    }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .task input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #8b5cf6;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .task-text {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      color: #39304f;
+      font-size: 14px;
+    }
+
+    .task.done .task-text {
+      text-decoration: line-through;
+      color: #aaa3bb;
+    }
+
+    .delete-btn {
+      background: #ffe4ee;
+      color: #d94678;
+      border-radius: 8px;
+      padding: 7px 9px;
+      font-size: 12px;
+    }
+
+    .delete-btn:hover {
+      background: #fecddc;
+    }
+
+    .empty {
+      text-align: center;
+      color: #9991ad;
+      padding: 22px 0;
+      font-size: 14px;
+    }
+
+    .footer {
+      text-align: center;
+      color: #a29ab4;
+      font-size: 12px;
+      margin-top: 22px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="header">
+      <h1>My Tasks ✨</h1>
+      <p>Stay focused. Get things done.</p>
+    </header>
+
+    <section class="stats">
+      <div class="stat">
+        <h2 id="totalTasks">0</h2>
+        <p>Total tasks</p>
+      </div>
+      <div class="stat">
+        <h2 id="completedTasks">0</h2>
+        <p>Completed</p>
+      </div>
+    </section>
+
+    <form class="input-area" id="taskForm">
+      <input
+        type="text"
+        id="taskInput"
+        placeholder="Add a new task..."
+        maxlength="200"
+        aria-label="New task"
+        required
+      >
+      <button class="add-btn" type="submit" aria-label="Add task">
+        +
+      </button>
+    </form>
+
+    <h2 class="section-title">Today's Tasks</h2>
+
+    <ul id="taskList"></ul>
+
+    <p class="footer">Small steps, big achievements 💜</p>
+  </main>
+
+  <script>
+    const taskInput = document.getElementById("taskInput");
+    const taskForm = document.getElementById("taskForm");
+    const taskList = document.getElementById("taskList");
+    const totalTasks = document.getElementById("totalTasks");
+    const completedTasks =
+      document.getElementById("completedTasks");
+
+    // Restore saved tasks from the browser.
+    let tasks = [];
+
+    try {
+      const savedTasks = localStorage.getItem("gradientTasks");
+      const parsed = JSON.parse(savedTasks || "[]");
+
+      if (Array.isArray(parsed)) {
+        tasks = parsed.filter(task =>
+          task &&
+          typeof task.text === "string" &&
+          typeof task.done === "boolean"
+        );
+      }
+    } catch {
+      tasks = [];
+    }
+
+    function saveTasks() {
+      try {
+        localStorage.setItem(
+          "gradientTasks",
+          JSON.stringify(tasks)
+        );
+      } catch {
+        // The app still works if storage is unavailable.
+      }
+    }
+
+    function updateStats() {
+      totalTasks.textContent = tasks.length;
+      completedTasks.textContent =
+        tasks.filter(task => task.done).length;
+    }
+
+    function renderTasks() {
+      taskList.replaceChildren();
+
+      if (tasks.length === 0) {
+        const empty = document.createElement("li");
+        empty.className = "empty";
+        empty.textContent = "No tasks yet. Add one above! 🌸";
+        taskList.appendChild(empty);
+      }
+
+      tasks.forEach((task, index) => {
+        const item = document.createElement("li");
+        item.className = "task";
+
+        if (task.done) {
+          item.classList.add("done");
+        }
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.setAttribute(
+          "aria-label",
+          "Complete " + task.text
+        );
+
+        checkbox.addEventListener("change", () => {
+          tasks[index].done = checkbox.checked;
+          saveTasks();
+          renderTasks();
+        });
+
+        const text = document.createElement("span");
+        text.className = "task-text";
+        text.textContent = task.text;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "delete-btn";
+        deleteButton.textContent = "Delete";
+        deleteButton.setAttribute("aria-label", "Delete task");
+
+        deleteButton.addEventListener("click", () => {
+          tasks.splice(index, 1);
+          saveTasks();
+          renderTasks();
+        });
+
+        item.append(checkbox, text, deleteButton);
+        taskList.appendChild(item);
+      });
+
+      updateStats();
+    }
+
+    taskForm.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const text = taskInput.value.trim();
+
+      if (!text) return;
+
+      tasks.push({
+        text: text,
+        done: false
+      });
+
+      saveTasks();
+      renderTasks();
+
+      taskInput.value = "";
+      taskInput.focus();
+    });
+
+    renderTasks();
+  </script>
+</body>
+</html>
